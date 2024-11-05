@@ -46,8 +46,8 @@ public class PdfGenServiceImpl implements PdfGenService {
             return filePath;
         }
 
-//        createPdf(request, filePath);
-        createPdfFromTemplate(request, filePath);
+        createPdf(request, filePath);
+//        createPdfFromTemplate(request, filePath);
         System.out.println("PDF Generated At : " + filePath);
         return filePath;
     }
