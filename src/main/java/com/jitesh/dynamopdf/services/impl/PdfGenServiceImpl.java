@@ -6,12 +6,13 @@ import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
 import com.jitesh.dynamopdf.models.InvoiceRequest;
 import com.jitesh.dynamopdf.models.Item;
 import com.jitesh.dynamopdf.services.PdfGenService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
@@ -23,17 +24,20 @@ import java.util.Base64;
 @Service
 public class PdfGenServiceImpl implements PdfGenService {
 
-    private final String STORAGE_DIR = "docs/";
+    @Value("${pdf.storage.dir}")
+    private String STORAGE_DIR;
 
     public String generateOrRetrievePdf(InvoiceRequest request) throws Exception {
         String hash = generateHash(request);
         String filePath = STORAGE_DIR + hash + ".pdf";
 
         if (Files.exists(Paths.get(filePath))) {
+            System.out.println("Already Generated At : " + filePath);
             return filePath;
         }
 
         createPdf(request, filePath);
+        System.out.println("PDF Generated At : " + filePath);
         return filePath;
     }
 
@@ -50,7 +54,7 @@ public class PdfGenServiceImpl implements PdfGenService {
              PdfDocument pdf = new PdfDocument(writer);
              Document document = new Document(pdf)) {
 
-            PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             document.add(new Paragraph("Invoice").setFont(font).setFontSize(18));
 
             document.add(new Paragraph("Seller: " + request.getSeller())

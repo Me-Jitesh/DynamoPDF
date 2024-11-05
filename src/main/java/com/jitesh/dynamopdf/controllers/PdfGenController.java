@@ -34,16 +34,19 @@ public class PdfGenController {
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadPdf(@RequestBody InvoiceRequest request) {
         try {
-            String filePath = pdfService.generateOrRetrievePdf(request);
+            String filePath = pdfService.generateOrRetrievePdf(request); // Will also generate if not exist
             File pdfFile = new File(filePath);
 
             if (!pdfFile.exists()) {
-                return ResponseEntity.notFound().build();
+                System.out.println("PDF Doesn't Exists !");
+                return ResponseEntity.notFound().build(); // Fallback for Something went wrong with data
             }
 
             Resource resource = new FileSystemResource(pdfFile);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdfFile.getName());
+
+            System.out.println("PDF Downloaded Successfully !");
             return ResponseEntity.ok()
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_PDF)
