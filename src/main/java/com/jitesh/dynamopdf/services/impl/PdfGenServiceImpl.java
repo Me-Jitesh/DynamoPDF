@@ -14,10 +14,15 @@ import com.itextpdf.layout.properties.UnitValue;
 import com.jitesh.dynamopdf.models.InvoiceRequest;
 import com.jitesh.dynamopdf.models.Item;
 import com.jitesh.dynamopdf.services.PdfGenService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -29,6 +34,9 @@ public class PdfGenServiceImpl implements PdfGenService {
     @Value("${pdf.storage.dir}")
     private String STORAGE_DIR;
 
+    @Autowired
+    private TemplateEngine templateEngine;
+
     public String generateOrRetrievePdf(InvoiceRequest request) throws Exception {
         String hash = generateHash(request);
         String filePath = STORAGE_DIR + hash + ".pdf";
@@ -38,7 +46,8 @@ public class PdfGenServiceImpl implements PdfGenService {
             return filePath;
         }
 
-        createPdf(request, filePath);
+//        createPdf(request, filePath);
+        createPdfFromTemplate(request, filePath);
         System.out.println("PDF Generated At : " + filePath);
         return filePath;
     }
@@ -97,6 +106,19 @@ public class PdfGenServiceImpl implements PdfGenService {
 
             document.add(itemTable);
 
+        }
+    }
+
+    private void createPdfFromTemplate(InvoiceRequest request, String filePath) throws Exception {
+        Context context = new Context();
+        context.setVariable("invoice", request);
+        String htmlContent = templateEngine.process("invoice-template", context);
+
+        try (OutputStream os = new FileOutputStream(filePath)) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(os);
         }
     }
 }
