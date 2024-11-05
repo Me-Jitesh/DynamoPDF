@@ -42,7 +42,9 @@ class DynamoPdfApplicationTests {
         sampleRequest.setBuyerAddress("New Delhi, India");
 
         Item item = new Item("Product 1", "12 Nos", 123.00, 1476.00);
-        sampleRequest.setItems(List.of(item));
+        List<Item> items = new java.util.ArrayList<>();
+        items.add(item);
+        sampleRequest.setItems(items);
     }
 
     @Test
