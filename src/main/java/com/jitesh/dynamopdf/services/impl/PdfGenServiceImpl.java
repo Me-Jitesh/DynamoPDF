@@ -9,6 +9,8 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.jitesh.dynamopdf.models.InvoiceRequest;
 import com.jitesh.dynamopdf.models.Item;
 import com.jitesh.dynamopdf.services.PdfGenService;
@@ -54,37 +56,47 @@ public class PdfGenServiceImpl implements PdfGenService {
              PdfDocument pdf = new PdfDocument(writer);
              Document document = new Document(pdf)) {
 
-            PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-            document.add(new Paragraph("Invoice").setFont(font).setFontSize(18));
+            PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
 
-            document.add(new Paragraph("Seller: " + request.getSeller())
-                    .setFont(font).setFontSize(12));
-            document.add(new Paragraph("Seller GSTIN: " + request.getSellerGstin())
-                    .setFont(font).setFontSize(12));
-            document.add(new Paragraph("Seller Address: " + request.getSellerAddress())
-                    .setFont(font).setFontSize(12));
-            document.add(new Paragraph("Buyer: " + request.getBuyer())
-                    .setFont(font).setFontSize(12));
-            document.add(new Paragraph("Buyer GSTIN: " + request.getBuyerGstin())
-                    .setFont(font).setFontSize(12));
-            document.add(new Paragraph("Buyer Address: " + request.getBuyerAddress())
-                    .setFont(font).setFontSize(12));
+            Table infoTable = new Table(new float[]{1, 1});
+            infoTable.setWidth(UnitValue.createPercentValue(100));
 
-            document.add(new Paragraph("\nItems:").setFont(font).setFontSize(14));
+            Cell sellerCell = new Cell().add(new Paragraph("Seller:\n" + request.getSeller() + "\n" +
+                            request.getSellerAddress() + "\nGSTIN: " + request.getSellerGstin()))
+                    .setFont(font)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setPadding(10);
 
-            Table table = new Table(new float[]{4, 2, 2, 2});
-            table.addHeaderCell(new Cell().add(new Paragraph("Name").setFont(font)));
-            table.addHeaderCell(new Cell().add(new Paragraph("Quantity").setFont(font)));
-            table.addHeaderCell(new Cell().add(new Paragraph("Rate").setFont(font)));
-            table.addHeaderCell(new Cell().add(new Paragraph("Amount").setFont(font)));
+            Cell buyerCell = new Cell().add(new Paragraph("Buyer:\n" + request.getBuyer() + "\n" +
+                            request.getBuyerAddress() + "\nGSTIN: " + request.getBuyerGstin()))
+                    .setFont(font)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setPadding(10);
 
+            infoTable.addCell(sellerCell);
+            infoTable.addCell(buyerCell);
+            document.add(infoTable);
+
+            // Add Item Table Header
+            Table itemTable = new Table(new float[]{4, 2, 2, 2});
+            itemTable.setWidth(UnitValue.createPercentValue(100));
+
+            itemTable.addHeaderCell(new Cell().add(new Paragraph("Item")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER));
+            itemTable.addHeaderCell(new Cell().add(new Paragraph("Quantity")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER));
+            itemTable.addHeaderCell(new Cell().add(new Paragraph("Rate")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER));
+            itemTable.addHeaderCell(new Cell().add(new Paragraph("Amount")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER));
+
+            // Add Items to the Table
             for (Item item : request.getItems()) {
-                table.addCell(new Cell().add(new Paragraph(item.getName()).setFont(font)));
-                table.addCell(new Cell().add(new Paragraph(item.getQuantity()).setFont(font)));
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(item.getRate())).setFont(font)));
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(item.getAmount())).setFont(font)));
+                itemTable.addCell(new Cell().add(new Paragraph(item.getName())).setFont(font).setTextAlignment(TextAlignment.CENTER));
+                itemTable.addCell(new Cell().add(new Paragraph(item.getQuantity())).setFont(font).setTextAlignment(TextAlignment.CENTER));
+                itemTable.addCell(new Cell().add(new Paragraph(String.valueOf(item.getRate()))).setFont(font).setTextAlignment(TextAlignment.CENTER));
+                itemTable.addCell(new Cell().add(new Paragraph(String.valueOf(item.getAmount()))).setFont(font).setTextAlignment(TextAlignment.CENTER));
             }
-            document.add(table);
+
+            document.add(itemTable);
+
         }
     }
 }
